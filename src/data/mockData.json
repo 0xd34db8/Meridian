@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "sender": "Meridian",
+    "type": "status",
+    "content": "Scanning connected PDFs and Vector Index (Pinecone)...",
+    "timestamp": "10:30 AM"
+  },
+  {
+    "id": 2,
+    "sender": "Meridian",
+    "type": "status",
+    "content": "Live search active (Tavily API)...",
+    "timestamp": "10:30 AM"
+  },
+  {
+    "id": 3,
+    "sender": "Meridian",
+    "type": "text",
+    "content": "Hello! I am Meridian, your AI collaborator. How can I help you today?",
+    "timestamp": "10:30 AM"
+  }
+]
