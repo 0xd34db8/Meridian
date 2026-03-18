@@ -294,7 +294,7 @@ export default function ChatInterface() {
                   disabled={!inputValue.trim() && !isLoading} // <-- FIXED
                   className="bg-[#A259FF] text-white px-4 md:px-6 py-2 md:py-3 rounded-[12px] font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all disabled:grayscale disabled:opacity-50"
                 >
-                  {isLoading ? "Cancel" : <SendBtn className="w-8 h-8" />}
+                  {isLoading ? "✕" : <SendBtn className="w-8 h-8" />}
                 </button>
               </div>
             </div>
