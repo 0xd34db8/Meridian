@@ -33,8 +33,8 @@ export default function ChatInterface() {
   };
 
   // Configuration - Ensure these match your actual backend state
-  const userId = "user_01";
-  const threadId = "thread_01";
+  const userId = "user_02";
+  const threadId = "thread_02";
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
