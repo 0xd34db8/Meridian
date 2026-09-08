@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from "react";
-import conversationsData from "../data/conversationsData.json";
 import { useSearchParams } from "react-router-dom";
 import Logo from "../components/ui/Logo";
 import SendBtn from "../components/ui/SendBtn";
 
-const conversations = conversationsData;
-
 export default function ChatInterface() {
+  const [conversations, setConversations] = useState([]);
+  const [activeThreadId, setActiveThreadId] = useState("thread_03");
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
+  const [temperature, setTemperature] = useState(0.1);
   const [searchParams, setSearchParams] = useSearchParams();
   const hasPrefilled = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,11 +34,60 @@ export default function ChatInterface() {
 
   // Configuration - Ensure these match your actual backend state
   const userId = "user_02";
-  const threadId = "thread_03"; // Bumped to start fresh memory
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    fetchThreads();
+  }, []);
+
+  const fetchThreads = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const res = await fetch(`${baseUrl}/threads`);
+      const data = await res.json();
+      if (data.threads) {
+        setConversations(data.threads);
+      }
+    } catch (e) {
+      console.error("Failed to fetch threads:", e);
+    }
+  };
+
+  const deleteThread = async (e, id) => {
+    e.stopPropagation();
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      await fetch(`${baseUrl}/threads/${id}`, { method: "DELETE" });
+      setConversations((prev) => prev.filter((c) => c.id !== id));
+      if (activeThreadId === id) {
+        setMessages([]);
+        setActiveThreadId(`thread_${Date.now()}`); // generate new thread
+      }
+    } catch (e) {
+      console.error("Failed to delete thread:", e);
+    }
+  };
+
+  const handleThreadClick = async (id) => {
+    setActiveThreadId(id);
+    setIsLoading(true);
+    setMessages([]);
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const res = await fetch(`${baseUrl}/chat/${id}/history`);
+      const data = await res.json();
+      if (data.history) {
+        setMessages(data.history);
+      }
+    } catch (e) {
+      console.error("Failed to fetch history:", e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const processMessage = async (text) => {
     if (!text.trim() || isLoading) return;
@@ -65,8 +114,9 @@ export default function ChatInterface() {
       const baseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
       const url = new URL(`${baseUrl}/chat`);
       url.searchParams.append("user_id", userId);
-      url.searchParams.append("thread_id", threadId);
+      url.searchParams.append("thread_id", activeThreadId);
       url.searchParams.append("message", userMsgText);
+      url.searchParams.append("temperature", temperature.toString());
 
       const response = await fetch(url, {
         method: "POST",
@@ -122,7 +172,13 @@ export default function ChatInterface() {
 
             setIsLoading(false);
           } else {
-            accumulatedAiContent += data;
+            let chunkText = data;
+            try {
+              chunkText = JSON.parse(data);
+            } catch (e) {
+              // Keep raw data if it's not JSON
+            }
+            accumulatedAiContent += chunkText;
 
             setMessages((prev) => {
               const lastMsg = prev[prev.length - 1];
@@ -188,12 +244,22 @@ export default function ChatInterface() {
             {conversations.map((chat) => (
               <div
                 key={chat.id}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer text-sm ${chat.active ? "text-[#A259FF] bg-[#F3E8FF] font-medium" : "text-gray-600 hover:bg-gray-50"}`}
+                onClick={() => handleThreadClick(chat.id)}
+                className={`group flex items-center justify-between gap-2 px-3 py-1.5 rounded-md cursor-pointer text-sm ${chat.id === activeThreadId ? "text-[#A259FF] bg-[#F3E8FF] font-medium" : "text-gray-600 hover:bg-gray-50"}`}
               >
-                <div
-                  className={`w-2 h-2 rounded-full ${chat.active ? "bg-[#A259FF]" : "bg-gray-300"}`}
-                />
-                {chat.title}
+                <div className="flex items-center gap-2 truncate">
+                  <div className={`w-2 h-2 rounded-full shrink-0 ${chat.id === activeThreadId ? "bg-[#A259FF]" : "bg-gray-300"}`} />
+                  <span className="truncate">{chat.title}</span>
+                </div>
+                <button 
+                  onClick={(e) => deleteThread(e, chat.id)}
+                  className="text-gray-400 hover:text-red-500 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete Chat"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  </svg>
+                </button>
               </div>
             ))}
           </div>
@@ -321,11 +387,17 @@ export default function ChatInterface() {
               <div className="mt-2 space-y-2">
                 <div className="flex justify-between text-xs font-bold">
                   <span>Temperature</span>
-                  <span className="text-gray-500">0.1</span>
+                  <span className="text-gray-500">{temperature.toFixed(1)}</span>
                 </div>
-                <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#A259FF] w-[10%]" />
-                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={temperature}
+                  onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                  className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#A259FF]"
+                />
               </div>
             </div>
           </div>
