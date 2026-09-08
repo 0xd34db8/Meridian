@@ -267,9 +267,9 @@ export default function ChatInterface() {
               <h3 className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
                 Chats
               </h3>
-              <button 
-                onClick={handleNewChat} 
-                className="text-gray-400 hover:text-[#A259FF] transition-colors" 
+              <button
+                onClick={handleNewChat}
+                className="text-gray-400 hover:text-[#A259FF] transition-colors"
                 title="New Chat"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
@@ -288,7 +288,7 @@ export default function ChatInterface() {
                   <span className="truncate">{chat.title}</span>
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                  <button 
+                  <button
                     onClick={(e) => handleRenameChat(e, chat.id, chat.title)}
                     className="text-gray-400 hover:text-[#A259FF]"
                     title="Rename Chat"
@@ -297,7 +297,7 @@ export default function ChatInterface() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
                     </svg>
                   </button>
-                  <button 
+                  <button
                     onClick={(e) => deleteThread(e, chat.id)}
                     className="text-gray-400 hover:text-red-500"
                     title="Delete Chat"
@@ -316,6 +316,25 @@ export default function ChatInterface() {
         <main className="flex-1 flex flex-col min-w-0 bg-[#F5F5F5] relative">
           <div className="flex-1 min-h-0 overflow-y-auto pt-28 md:pt-40 px-4 md:px-6 flex justify-center">
             <div className="w-full max-w-3xl space-y-6 pb-32">
+              {messages.length === 0 && !isLoading && (
+                <div className="flex flex-col items-center justify-center h-full text-center space-y-6 mt-10 md:mt-20 select-none">
+                  <div className="flex items-center justify-center gap-x-2">
+                    <h1
+                      className="flex items-center text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-transparent bg-clip-text leading-none"
+                      style={{
+                        backgroundImage:
+                          "linear-gradient(to right, #ef4444 0%, #f97316 20%, #eab308 40%, #22c55e 60%, #3b82f6 80%, #a855f7 100%)",
+                      }}
+                    >
+                      <Logo className="h-[0.85em] w-auto mr-[0.05em]" />
+                      <span>eridian</span>
+                    </h1>
+                  </div>
+                  <p className="text-gray-500 font-medium text-lg max-w-md mx-auto">
+                    I'm your RAG-based AI assistant. How can I help you today?
+                  </p>
+                </div>
+              )}
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -331,17 +350,16 @@ export default function ChatInterface() {
                     )}
 
                     <div
-                      className={`p-4 rounded-2xl shadow-sm border ${
-                        message.sender === "User"
-                          ? "bg-white border-gray-200 rounded-tr-none"
-                          : message.type === "status"
-                            ? "bg-gradient-to-r from-indigo-700 via-55% to-cyan-500 purple-950 text-fuchsia-50 font-mono text-xs"
-                            : message.type === "Error"
-                              ? "bg-gradient-to-r from-red-500 via-55% to-pink-600 text-white font-mono text-xs"
-                              : message.type === "Abort" // <-- ADD THIS CHECK
-                                ? "bg-orange-100 border-orange-200 text-orange-800 italic"
-                                : "bg-white border-gray-100 rounded-tl-none"
-                      }`}
+                      className={`p-4 rounded-2xl shadow-sm border ${message.sender === "User"
+                        ? "bg-white border-gray-200 rounded-tr-none"
+                        : message.type === "status"
+                          ? "bg-gradient-to-r from-indigo-700 via-55% to-cyan-500 purple-950 text-fuchsia-50 font-mono text-xs"
+                          : message.type === "Error"
+                            ? "bg-gradient-to-r from-red-500 via-55% to-pink-600 text-white font-mono text-xs"
+                            : message.type === "Abort" // <-- ADD THIS CHECK
+                              ? "bg-orange-100 border-orange-200 text-orange-800 italic"
+                              : "bg-white border-gray-100 rounded-tl-none"
+                        }`}
                     >
                       {message.type === "status" ? (
                         <div className="flex items-center gap-2">

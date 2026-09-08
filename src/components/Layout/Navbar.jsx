@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Logo from "../ui/Logo";
 import LoginBtn from "../ui/LoginBtn";
 
@@ -89,6 +90,9 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeLink, setActiveLink] = useState(null);
+  
+  const location = useLocation();
+  const isChatPage = location.pathname.startsWith("/chat");
 
   // Elevate navbar on scroll
   useEffect(() => {
@@ -119,7 +123,7 @@ export default function Navbar() {
           role="navigation"
           aria-label="Main"
         >
-          <div className="figma-nav__inner">
+          <div className="figma-nav__inner" style={isChatPage ? { maxWidth: "100%", padding: "0 16px" } : {}}>
             {/* Left: logo + links */}
             <div className="figma-nav__left">
               <a
