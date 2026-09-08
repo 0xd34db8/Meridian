@@ -34,7 +34,7 @@ export default function ChatInterface() {
 
   // Configuration - Ensure these match your actual backend state
   const userId = "user_02";
-  const threadId = "thread_02";
+  const threadId = "thread_03"; // Bumped to start fresh memory
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -62,9 +62,8 @@ export default function ChatInterface() {
     setIsLoading(true);
 
     try {
-      const url = new URL(
-        "https://multi-source-self-correcting-rag-based.onrender.com/chat",
-      );
+      const baseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const url = new URL(`${baseUrl}/chat`);
       url.searchParams.append("user_id", userId);
       url.searchParams.append("thread_id", threadId);
       url.searchParams.append("message", userMsgText);
