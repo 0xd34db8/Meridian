@@ -9,6 +9,28 @@ export default function ChatInterface() {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [temperature, setTemperature] = useState(0.1);
+  const [maxTokens, setMaxTokens] = useState(512);
+  const [topP, setTopP] = useState(0.9);
+  const [topK, setTopK] = useState(50);
+  const [repPenalty, setRepPenalty] = useState(1.0);
+  const [systemPrompt, setSystemPrompt] = useState("");
+  const [personaPreset, setPersonaPreset] = useState("Default");
+  const [webSearchEnabled, setWebSearchEnabled] = useState(true);
+  const [ragEnabled, setRagEnabled] = useState(true);
+
+  // Persona Presets Effect
+  useEffect(() => {
+    if (personaPreset === "Default") {
+      setSystemPrompt("");
+    } else if (personaPreset === "Code Expert") {
+      setSystemPrompt("You are an expert software engineer. Provide concise, production-ready code.");
+    } else if (personaPreset === "Concise / TL;DR") {
+      setSystemPrompt("You are a helpful assistant. Keep your answers extremely short and to the point.");
+    } else if (personaPreset === "Creative Writer") {
+      setSystemPrompt("You are a creative writer. Use vivid language and a story-telling style.");
+    }
+  }, [personaPreset]);
+
   const [searchParams, setSearchParams] = useSearchParams();
   const hasPrefilled = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -142,6 +164,13 @@ export default function ChatInterface() {
       url.searchParams.append("thread_id", activeThreadId);
       url.searchParams.append("message", userMsgText);
       url.searchParams.append("temperature", temperature.toString());
+      url.searchParams.append("max_new_tokens", maxTokens.toString());
+      url.searchParams.append("top_p", topP.toString());
+      url.searchParams.append("top_k", topK.toString());
+      url.searchParams.append("repetition_penalty", repPenalty.toString());
+      url.searchParams.append("system_prompt", systemPrompt);
+      url.searchParams.append("web_search_enabled", webSearchEnabled.toString());
+      url.searchParams.append("rag_enabled", ragEnabled.toString());
 
       const response = await fetch(url, {
         method: "POST",
@@ -436,32 +465,147 @@ export default function ChatInterface() {
 
         {/* Inspector Sidebar */}
         <aside className="hidden xl:flex md:w-64 bg-white border-l border-gray-200 flex flex-col shrink-0">
-          <div className="p-4 border-b border-gray-100 flex justify-between items-center">
-            <span className="text-[11px] font-bold uppercase text-gray-400">
-              Inspector
-            </span>
-            <span className="text-[11px] font-bold text-[#A259FF]">
-              Dev Mode
-            </span>
-          </div>
-          <div className="p-4 space-y-6">
+          <div className="p-4 space-y-6 overflow-y-auto">
             <div>
               <label className="text-[10px] font-bold text-gray-400 uppercase">
                 Model Parameters
               </label>
-              <div className="mt-2 space-y-2">
-                <div className="flex justify-between text-xs font-bold">
-                  <span>Temperature</span>
-                  <span className="text-gray-500">{temperature.toFixed(1)}</span>
+              <div className="mt-2 space-y-4">
+
+                {/* Temperature */}
+                <div>
+                  <div className="flex justify-between text-xs font-bold mb-1">
+                    <span>Temperature</span>
+                    <span className="text-gray-500">{temperature.toFixed(1)}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={temperature}
+                    onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#A259FF]"
+                  />
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={temperature}
-                  onChange={(e) => setTemperature(parseFloat(e.target.value))}
-                  className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#A259FF]"
+
+                {/* Max Tokens */}
+                <div>
+                  <div className="flex justify-between text-xs font-bold mb-1">
+                    <span>Max Tokens</span>
+                    <span className="text-gray-500">{maxTokens}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="64"
+                    max="4096"
+                    step="64"
+                    value={maxTokens}
+                    onChange={(e) => setMaxTokens(parseInt(e.target.value))}
+                    className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#A259FF]"
+                  />
+                </div>
+
+                {/* Top P */}
+                <div>
+                  <div className="flex justify-between text-xs font-bold mb-1">
+                    <span>Top-P</span>
+                    <span className="text-gray-500">{topP.toFixed(2)}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={topP}
+                    onChange={(e) => setTopP(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#A259FF]"
+                  />
+                </div>
+
+                {/* Top K */}
+                <div>
+                  <div className="flex justify-between text-xs font-bold mb-1">
+                    <span>Top-K</span>
+                    <span className="text-gray-500">{topK}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="100"
+                    step="1"
+                    value={topK}
+                    onChange={(e) => setTopK(parseInt(e.target.value))}
+                    className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#A259FF]"
+                  />
+                </div>
+
+                {/* Repetition Penalty */}
+                <div>
+                  <div className="flex justify-between text-xs font-bold mb-1">
+                    <span>Rep Penalty</span>
+                    <span className="text-gray-500">{repPenalty.toFixed(1)}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="2"
+                    step="0.1"
+                    value={repPenalty}
+                    onChange={(e) => setRepPenalty(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#A259FF]"
+                  />
+                </div>
+
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold text-gray-400 uppercase">
+                Tools & Plugins
+              </label>
+              <div className="mt-2 space-y-2">
+                <label className="flex items-center space-x-2 text-xs font-bold cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={webSearchEnabled}
+                    onChange={(e) => setWebSearchEnabled(e.target.checked)}
+                    className="accent-[#A259FF]"
+                  />
+                  <span>Web Search</span>
+                </label>
+                <label className="flex items-center space-x-2 text-xs font-bold cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={ragEnabled}
+                    onChange={(e) => setRagEnabled(e.target.checked)}
+                    className="accent-[#A259FF]"
+                  />
+                  <span>Doc Retrieval</span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold text-gray-400 uppercase">
+                Persona
+              </label>
+              <div className="mt-2 space-y-2">
+                <select
+                  value={personaPreset}
+                  onChange={(e) => setPersonaPreset(e.target.value)}
+                  className="w-full text-xs p-2 rounded bg-gray-100 border border-gray-200 outline-none focus:border-[#A259FF]"
+                >
+                  <option>Default</option>
+                  <option>Code Expert</option>
+                  <option>Concise / TL;DR</option>
+                  <option>Creative Writer</option>
+                </select>
+                <textarea
+                  placeholder="Custom system instructions..."
+                  value={systemPrompt}
+                  onChange={(e) => setSystemPrompt(e.target.value)}
+                  className="w-full h-24 text-xs p-2 rounded bg-gray-100 border border-gray-200 outline-none focus:border-[#A259FF] resize-none"
                 />
               </div>
             </div>
