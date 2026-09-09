@@ -19,6 +19,7 @@ export default function ChatInterface() {
   const [ragEnabled, setRagEnabled] = useState(true);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+  const [knowledgeList, setKnowledgeList] = useState([]);
 
   // Persona Presets Effect
   useEffect(() => {
@@ -67,7 +68,31 @@ export default function ChatInterface() {
 
   useEffect(() => {
     fetchThreads();
+    fetchKnowledge();
   }, []);
+
+  const fetchKnowledge = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const res = await fetch(`${baseUrl}/knowledge`);
+      const data = await res.json();
+      if (data.documents) {
+        setKnowledgeList(data.documents);
+      }
+    } catch (e) {
+      console.error("Failed to fetch knowledge:", e);
+    }
+  };
+
+  const deleteKnowledge = async (id) => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      await fetch(`${baseUrl}/knowledge/${id}`, { method: "DELETE" });
+      setKnowledgeList((prev) => prev.filter((doc) => doc.id !== id));
+    } catch (e) {
+      console.error("Failed to delete knowledge:", e);
+    }
+  };
 
   const fetchThreads = async () => {
     try {
@@ -731,6 +756,48 @@ export default function ChatInterface() {
                   />
                   <span>Doc Retrieval</span>
                 </label>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[10px] font-bold text-gray-400 uppercase">
+                  Knowledge Base
+                </label>
+                <button
+                  onClick={fetchKnowledge}
+                  className="text-gray-400 hover:text-[#A259FF] transition-colors"
+                  title="Refresh Knowledge"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                  </svg>
+                </button>
+              </div>
+              <div className="space-y-2 max-h-48 overflow-y-auto mobile-scrollbar pr-1">
+                {knowledgeList.length === 0 ? (
+                  <div className="text-xs text-gray-400 italic">No sources ingested.</div>
+                ) : (
+                  knowledgeList.map((doc) => (
+                    <div key={doc.id} className="group flex items-center justify-between gap-2 p-2 rounded bg-gray-50 border border-gray-100 hover:border-gray-300 transition-colors">
+                      <div className="flex items-center gap-2 truncate">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3 text-gray-400 shrink-0">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                        </svg>
+                        <span className="text-[11px] text-gray-600 truncate" title={doc.source}>{doc.source}</span>
+                      </div>
+                      <button
+                        onClick={() => deleteKnowledge(doc.id)}
+                        className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 p-1"
+                        title="Delete Source"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
