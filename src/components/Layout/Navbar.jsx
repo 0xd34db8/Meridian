@@ -90,6 +90,9 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeLink, setActiveLink] = useState(null);
+  const [showIngestionModal, setShowIngestionModal] = useState(false);
+  const [ingestUrl, setIngestUrl] = useState("");
+  const [isIngesting, setIsIngesting] = useState(false);
   
   const location = useLocation();
   const isChatPage = location.pathname.startsWith("/chat");
@@ -136,15 +139,60 @@ export default function Navbar() {
 
               <ul className="figma-nav__links" role="list">
                 {NAV_LINKS.map(({ label, href }) => (
-                  <li key={label}>
+                  <li key={label} className="relative">
                     <a
                       href={href}
                       className={`figma-nav__link${activeLink === label ? " figma-nav__link--active" : ""}`}
-                      onClick={() => setActiveLink(label)}
+                      onClick={(e) => {
+                        if (label === "Ingestion") {
+                          e.preventDefault();
+                          setShowIngestionModal(!showIngestionModal);
+                        }
+                        setActiveLink(label);
+                      }}
                       aria-current={activeLink === label ? "page" : undefined}
                     >
                       {label}
                     </a>
+                    {label === "Ingestion" && showIngestionModal && (
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-72 p-5 bg-white/95 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-2xl border border-gray-100 z-50 text-gray-800 transition-all">
+                        <h4 className="text-sm font-semibold mb-3 text-gray-900">Ingest Data</h4>
+                        <input
+                          type="url"
+                          placeholder="https://example.com/data"
+                          className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder-gray-400"
+                          value={ingestUrl}
+                          onChange={(e) => setIngestUrl(e.target.value)}
+                        />
+                        <button
+                          className="w-full bg-black text-white py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors shadow-sm disabled:opacity-50"
+                          disabled={isIngesting || !ingestUrl.trim()}
+                          onClick={async () => {
+                            setIsIngesting(true);
+                            try {
+                              const baseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+                              const res = await fetch(`${baseUrl}/ingest`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ url: ingestUrl })
+                              });
+                              if (!res.ok) throw new Error("Ingestion failed");
+                              const data = await res.json();
+                              alert(data.message);
+                              setShowIngestionModal(false);
+                              setIngestUrl("");
+                            } catch (e) {
+                              console.error(e);
+                              alert("Failed to ingest URL: " + e.message);
+                            } finally {
+                              setIsIngesting(false);
+                            }
+                          }}
+                        >
+                          {isIngesting ? "Ingesting..." : "Ingest"}
+                        </button>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -180,14 +228,60 @@ export default function Navbar() {
           aria-label="Mobile navigation"
         >
           {NAV_LINKS.map(({ label, href }) => (
-            <a
-              key={label}
-              href={href}
-              className="figma-nav__drawer-link"
-              onClick={() => setMobileOpen(false)}
-            >
-              {label}
-            </a>
+            <div key={label} className="w-full">
+              <a
+                href={href}
+                className="figma-nav__drawer-link"
+                onClick={(e) => {
+                  if (label === "Ingestion") {
+                    e.preventDefault();
+                    setShowIngestionModal(!showIngestionModal);
+                  } else {
+                    setMobileOpen(false);
+                  }
+                }}
+              >
+                {label}
+              </a>
+              {label === "Ingestion" && showIngestionModal && (
+                <div className="px-6 pb-4 pt-2">
+                  <input
+                    type="url"
+                    placeholder="https://example.com/data"
+                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    value={ingestUrl}
+                    onChange={(e) => setIngestUrl(e.target.value)}
+                  />
+                  <button
+                    className="w-full bg-black text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
+                    disabled={isIngesting || !ingestUrl.trim()}
+                    onClick={async () => {
+                      setIsIngesting(true);
+                      try {
+                        const baseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+                        const res = await fetch(`${baseUrl}/ingest`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ url: ingestUrl })
+                        });
+                        if (!res.ok) throw new Error("Ingestion failed");
+                        const data = await res.json();
+                        alert(data.message);
+                        setShowIngestionModal(false);
+                        setIngestUrl("");
+                      } catch (e) {
+                        console.error(e);
+                        alert("Failed to ingest URL: " + e.message);
+                      } finally {
+                        setIsIngesting(false);
+                      }
+                    }}
+                  >
+                    {isIngesting ? "Ingesting..." : "Ingest"}
+                  </button>
+                </div>
+              )}
+            </div>
           ))}
 
           <div className="figma-nav__drawer-actions">
