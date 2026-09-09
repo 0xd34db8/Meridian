@@ -342,3 +342,17 @@ html {
     padding: 0 16px;
   }
 }
+
+/* Custom scrollbar for mobile visibility */
+.mobile-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  -webkit-appearance: none;
+}
+.mobile-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+.mobile-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}

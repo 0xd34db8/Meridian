@@ -17,6 +17,8 @@ export default function ChatInterface() {
   const [personaPreset, setPersonaPreset] = useState("Default");
   const [webSearchEnabled, setWebSearchEnabled] = useState(true);
   const [ragEnabled, setRagEnabled] = useState(true);
+  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
 
   // Persona Presets Effect
   useEffect(() => {
@@ -95,6 +97,7 @@ export default function ChatInterface() {
 
   const handleThreadClick = async (id) => {
     setActiveThreadId(id);
+    setIsLeftSidebarOpen(false);
     setIsLoading(true);
     setMessages([]);
     try {
@@ -114,6 +117,7 @@ export default function ChatInterface() {
   const handleNewChat = () => {
     setActiveThreadId(`thread_${Date.now()}`);
     setMessages([]);
+    setIsLeftSidebarOpen(false);
   };
 
   const handleRenameChat = async (e, id, currentTitle) => {
@@ -287,11 +291,24 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="h-[calc(100vh-48px)] md:h-[calc(100vh-72px)] flex flex-col overflow-hidden bg-[#F5F5F5] text-[#111] font-sans selection:bg-[#A259FF] selection:text-white">
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+    <div className="h-[calc(100vh-48px)] md:h-[calc(100vh-72px)] flex flex-col overflow-hidden bg-[#F5F5F5] text-[#111] font-sans selection:bg-[#A259FF] selection:text-white relative">
+      <div className="flex flex-1 min-h-0 overflow-hidden relative">
         {/* Sidebar */}
-        <aside className="hidden md:flex md:w-64 bg-white border-r border-gray-200 flex flex-col shrink-0">
-          <div className="flex-1 overflow-y-auto p-2">
+        {/* Mobile Backdrop */}
+        {isLeftSidebarOpen && (
+          <div
+            className="absolute inset-0 bg-black/20 z-40 md:hidden"
+            onClick={() => setIsLeftSidebarOpen(false)}
+          />
+        )}
+        <aside className={`
+          ${isLeftSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0
+          absolute md:static inset-y-0 left-0 z-50
+          w-64 bg-white border-r border-gray-200 flex flex-col shrink-0
+          transition-transform duration-300 ease-in-out
+        `}>
+          <div className="flex-1 overflow-y-scroll p-2 mobile-scrollbar">
             <div className="flex items-center justify-between px-2 mb-2">
               <h3 className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
                 Chats
@@ -343,7 +360,22 @@ export default function ChatInterface() {
 
         {/* Main Chat Canvas */}
         <main className="flex-1 flex flex-col min-w-0 bg-[#F5F5F5] relative">
-          <div className="flex-1 min-h-0 overflow-y-auto pt-28 md:pt-40 px-4 md:px-6 flex justify-center">
+          {/* Mobile Header */}
+          <div className="md:hidden flex items-center justify-between p-3 bg-white border-b border-gray-200 shrink-0 sticky top-0 z-30 shadow-sm">
+            <button onClick={() => setIsLeftSidebarOpen(true)} className="p-2 text-gray-500 hover:text-black transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              </svg>
+            </button>
+            <span className="font-bold text-gray-700"></span>
+            <button onClick={() => setIsRightSidebarOpen(true)} className="p-2 text-gray-500 hover:text-black transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="flex-1 min-h-0 overflow-y-auto pt-6 md:pt-40 px-4 md:px-6 flex justify-center">
             <div className="w-full max-w-3xl space-y-6 pb-32">
               {messages.length === 0 && !isLoading && (
                 <div className="flex flex-col items-center justify-center h-full text-center space-y-6 mt-10 md:mt-20 select-none">
@@ -464,8 +496,21 @@ export default function ChatInterface() {
         </main>
 
         {/* Inspector Sidebar */}
-        <aside className="hidden xl:flex md:w-64 bg-white border-l border-gray-200 flex flex-col shrink-0">
-          <div className="p-4 space-y-6 overflow-y-auto">
+        {/* Mobile Backdrop */}
+        {isRightSidebarOpen && (
+          <div
+            className="absolute inset-0 bg-black/20 z-40 xl:hidden"
+            onClick={() => setIsRightSidebarOpen(false)}
+          />
+        )}
+        <aside className={`
+          ${isRightSidebarOpen ? "translate-x-0" : "translate-x-full"}
+          xl:translate-x-0
+          absolute xl:static inset-y-0 right-0 z-50
+          w-64 bg-white border-l border-gray-200 flex flex-col shrink-0
+          transition-transform duration-300 ease-in-out
+        `}>
+          <div className="flex-1 p-4 space-y-6 overflow-y-scroll mobile-scrollbar">
             <div>
               <label className="text-[10px] font-bold text-gray-400 uppercase">
                 Model Parameters
