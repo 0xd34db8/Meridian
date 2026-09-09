@@ -8,12 +8,12 @@ export default function Hero() {
           title="Pinecone Vector DB"
           description="High-performance semantic retrieval using collection1 index for instant context injection."
           linkText="Explore indices"
-          bgColor="bg-[#F2F7EF]"
         >
-          <div className="h-48 flex items-center justify-center bg-white rounded-4xl">
+          <div className="h-32 flex items-center justify-center bg-transparent">
             <img
               src="https://avatars.githubusercontent.com/u/54333248?s=200&v=4"
-              alt="user"
+              alt="Pinecone"
+              className="object-contain h-24 p-2"
             />
           </div>
         </Card>
@@ -22,10 +22,9 @@ export default function Hero() {
           title="Neon PostgreSQL"
           description="Persistent conversation memory via LangGraph AsyncPostgresSaver on serverless infrastructure."
           linkText="View database"
-          bgColor="bg-[#EFF7FF]"
         >
-          <div className="h-48 flex items-center justify-center bg-white">
-            <img src={"/NDB.png"} alt="user" />
+          <div className="h-32 flex items-center justify-center bg-transparent overflow-hidden">
+            <img src={"/NDB.png"} alt="Neon" className="object-cover w-full h-full" />
           </div>
         </Card>
 
@@ -33,10 +32,9 @@ export default function Hero() {
           title="Inference API"
           description="Running Llama-3.1-8B-Instruct. Production-ready inference with no local GPU overhead."
           linkText="Check latency"
-          bgColor="bg-[#FFF9EF]"
         >
-          <div className="h-48 flex items-center justify-center bg-white text-5xl object-cover">
-            <img src={"/download.png"} alt="user" />
+          <div className="h-32 flex items-center justify-center bg-transparent overflow-hidden">
+            <img src={"/download.png"} alt="Inference API" className="object-cover w-full h-full" />
           </div>
         </Card>
       </div>

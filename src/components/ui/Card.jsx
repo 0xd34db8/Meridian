@@ -2,39 +2,39 @@ export default function Card({
   title,
   description,
   linkText,
-  bgColor = "bg-[#f2f7ef]", // Figma's signature soft green/grey
+  bgColor = "bg-transparent",
   children,
 }) {
   return (
     <div
-      className={`flex flex-col h-full ${bgColor} rounded-[32px] overflow-hidden group transition-all duration-300`}
+      className={`flex flex-col h-full ${bgColor} border border-gray-100 rounded-sm overflow-hidden group transition-all duration-300 hover:border-gray-300`}
     >
       {/* Content Section */}
-      <div className="pt-10 px-10 pb-6">
-        <h3 className="text-[28px] leading-[1.1] font-semibold tracking-tight text-[#1e1e1e] mb-4">
+      <div className="p-5 pb-4">
+        <h3 className="text-[15px] font-medium tracking-tight text-gray-900 mb-1.5">
           {title}
         </h3>
-        <p className="text-[17px] leading-relaxed text-[#555555] mb-6 max-w-[440px]">
+        <p className="text-[13px] leading-relaxed text-gray-500 mb-4">
           {description}
         </p>
 
         {linkText && (
           <a
             href="#home"
-            className="inline-block text-[17px] font-medium border-b border-black pb-0.5 hover:opacity-50 transition-opacity"
+            className="inline-flex items-center text-[12px] font-medium text-gray-400 group-hover:text-black transition-colors"
           >
-            {linkText}
+            {linkText} <span className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
           </a>
         )}
       </div>
 
-      {/* Visual Section - This is where the Figma UI screenshots go */}
-      <div className="mt-auto px-10 pb-10">
-        <div className="relative rounded-xl bg-white border border-black/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-transform duration-500 group-hover:-translate-y-2">
+      {/* Visual Section */}
+      <div className="px-5 pb-5 mt-auto">
+        <div className="relative overflow-hidden transition-all duration-500 border border-gray-100">
           {children ? (
             children
           ) : (
-            <div className="h-64 bg-slate-50 flex items-center justify-center italic text-slate-400">
+            <div className="h-32 bg-gray-50 flex items-center justify-center text-gray-400 text-xs">
               Visual Placeholder
             </div>
           )}
