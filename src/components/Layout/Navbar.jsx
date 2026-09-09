@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Logo from "../ui/Logo";
 import LoginBtn from "../ui/LoginBtn";
 
@@ -95,6 +95,9 @@ export default function Navbar() {
   const [isIngesting, setIsIngesting] = useState(false);
   
   const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isTemp = searchParams.get("temp") === "true";
   const isChatPage = location.pathname.startsWith("/chat");
 
   // Elevate navbar on scroll
@@ -201,8 +204,11 @@ export default function Navbar() {
             {/* Right: CTA buttons */}
             <div className="figma-nav__right">
               <LoginBtn />
-              <button className="figma-btn figma-btn--outline">
-                Try Temporary Chat
+              <button 
+                className={`figma-btn figma-btn--outline ${isTemp ? 'bg-orange-50 text-orange-600 border-orange-200 cursor-default hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200' : ''}`}
+                onClick={() => !isTemp && navigate("/chat?temp=true")}
+              >
+                {isTemp ? "Temp Chat On" : "Try Temporary Chat"}
               </button>
             </div>
 

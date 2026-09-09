@@ -17,6 +17,7 @@ export default function ChatInterface() {
   const [personaPreset, setPersonaPreset] = useState("Default");
   const [webSearchEnabled, setWebSearchEnabled] = useState(true);
   const [ragEnabled, setRagEnabled] = useState(true);
+  const [isTemporary, setIsTemporary] = useState(false);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
   const [knowledgeList, setKnowledgeList] = useState([]);
@@ -137,6 +138,8 @@ export default function ChatInterface() {
   };
 
   const handleThreadClick = async (id) => {
+    setIsTemporary(false);
+    setSearchParams({}, { replace: true });
     setActiveThreadId(id);
     setIsLeftSidebarOpen(false);
     setIsLoading(true);
@@ -156,6 +159,8 @@ export default function ChatInterface() {
   };
 
   const handleNewChat = () => {
+    setIsTemporary(false);
+    setSearchParams({}, { replace: true });
     setActiveThreadId(`thread_${Date.now()}`);
     setMessages([]);
     setIsLeftSidebarOpen(false);
@@ -201,6 +206,7 @@ export default function ChatInterface() {
 
     setMessages((prev) => [...prev, userMessage]);
     setConversations((prev) => {
+      if (isTemporary) return prev;
       if (!prev.some((c) => c.id === activeThreadId)) {
         return [{ id: activeThreadId, title: text.slice(0, 30) + (text.length > 30 ? "..." : "") }, ...prev];
       }
@@ -222,6 +228,7 @@ export default function ChatInterface() {
       url.searchParams.append("system_prompt", systemPrompt);
       url.searchParams.append("web_search_enabled", webSearchEnabled.toString());
       url.searchParams.append("rag_enabled", ragEnabled.toString());
+      url.searchParams.append("is_temporary", isTemporary.toString());
 
       const response = await fetch(url, {
         method: "POST",
@@ -323,14 +330,29 @@ export default function ChatInterface() {
     }
   };
 
+  const hasInitializedTemp = useRef(false);
+
   useEffect(() => {
+    const tempParam = searchParams.get("temp");
+    if (tempParam === "true" && !hasInitializedTemp.current) {
+      setIsTemporary(true);
+      setActiveThreadId(`temp_${Date.now()}`);
+      setMessages([]);
+      hasInitializedTemp.current = true;
+    } else if (tempParam !== "true") {
+      hasInitializedTemp.current = false;
+    }
+
     const prefill = searchParams.get("prefill");
     if (prefill && !hasPrefilled.current) {
       hasPrefilled.current = true;
       processMessage(prefill);
-      setSearchParams({}, { replace: true });
+      
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("prefill");
+      setSearchParams(newParams, { replace: true });
     }
-  }, []);
+  }, [searchParams]);
 
   const handleSendMessage = () => {
     processMessage(inputValue);

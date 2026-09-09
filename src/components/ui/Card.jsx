@@ -7,7 +7,7 @@ export default function Card({
 }) {
   return (
     <div
-      className={`flex flex-col h-full ${bgColor} border border-gray-100 rounded-sm overflow-hidden group transition-all duration-300 hover:border-gray-300`}
+      className={`flex flex-col h-full ${bgColor} border border-gray-200 rounded-lg overflow-hidden group transition-all duration-300 hover:border-gray-300`}
     >
       {/* Content Section */}
       <div className="p-5 pb-4">
