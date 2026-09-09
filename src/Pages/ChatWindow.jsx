@@ -122,6 +122,7 @@ export default function ChatInterface() {
 
   const deleteThread = async (e, id) => {
     e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this chat?")) return;
     try {
       const baseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
       await fetch(`${baseUrl}/threads/${id}`, { method: "DELETE" });
@@ -199,6 +200,12 @@ export default function ChatInterface() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    setConversations((prev) => {
+      if (!prev.some((c) => c.id === activeThreadId)) {
+        return [{ id: activeThreadId, title: text.slice(0, 30) + (text.length > 30 ? "..." : "") }, ...prev];
+      }
+      return prev;
+    });
     setIsLoading(true);
 
     try {
@@ -355,7 +362,7 @@ export default function ChatInterface() {
               </h3>
               <button
                 onClick={handleNewChat}
-                className="text-gray-400 hover:text-[#A259FF] transition-colors"
+                className="text-gray-400 hover:text-[#A259FF] transition-colors cursor-pointer"
                 title="New Chat"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
@@ -390,10 +397,10 @@ export default function ChatInterface() {
                     <div className={`w-2 h-2 rounded-full shrink-0 ${chat.id === activeThreadId ? "bg-[#A259FF]" : "bg-gray-300"}`} />
                     <span className="truncate">{chat.title}</span>
                   </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                  <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0">
                     <button
                       onClick={(e) => handleRenameChat(e, chat.id, chat.title)}
-                      className="text-gray-400 hover:text-[#A259FF]"
+                      className="text-gray-400 hover:text-[#A259FF] cursor-pointer"
                       title="Rename Chat"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -402,7 +409,7 @@ export default function ChatInterface() {
                     </button>
                     <button
                       onClick={(e) => deleteThread(e, chat.id)}
-                      className="text-gray-400 hover:text-red-500"
+                      className="text-gray-400 hover:text-red-500 cursor-pointer"
                       title="Delete Chat"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
