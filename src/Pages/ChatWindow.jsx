@@ -39,6 +39,7 @@ export default function ChatInterface() {
   const [searchParams, setSearchParams] = useSearchParams();
   const hasPrefilled = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingThreads, setIsFetchingThreads] = useState(true);
   const messagesEndRef = useRef(null);
   const abortControllerRef = useRef(null); // <-- added for cancelling stream
 
@@ -95,16 +96,25 @@ export default function ChatInterface() {
   };
 
   const fetchThreads = async () => {
-    try {
-      const baseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
-      const res = await fetch(`${baseUrl}/threads`);
-      const data = await res.json();
-      if (data.threads) {
-        setConversations(data.threads);
+    setIsFetchingThreads(true);
+    const baseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+    
+    const tryFetch = async () => {
+      try {
+        const res = await fetch(`${baseUrl}/threads`);
+        if (!res.ok) throw new Error("Backend not ready");
+        const data = await res.json();
+        if (data.threads) {
+          setConversations(data.threads);
+        }
+        setIsFetchingThreads(false);
+      } catch (e) {
+        console.warn("Waiting for backend to start...", e);
+        setTimeout(tryFetch, 2000);
       }
-    } catch (e) {
-      console.error("Failed to fetch threads:", e);
-    }
+    };
+    
+    tryFetch();
   };
 
   const deleteThread = async (e, id) => {
@@ -350,38 +360,48 @@ export default function ChatInterface() {
                 </svg>
               </button>
             </div>
-            {conversations.map((chat) => (
-              <div
-                key={chat.id}
-                onClick={() => handleThreadClick(chat.id)}
-                className={`group flex items-center justify-between gap-2 px-3 py-1.5 rounded-md cursor-pointer text-sm ${chat.id === activeThreadId ? "text-[#A259FF] bg-[#F3E8FF] font-medium" : "text-gray-600 hover:bg-gray-50"}`}
-              >
-                <div className="flex items-center gap-2 truncate">
-                  <div className={`w-2 h-2 rounded-full shrink-0 ${chat.id === activeThreadId ? "bg-[#A259FF]" : "bg-gray-300"}`} />
-                  <span className="truncate">{chat.title}</span>
-                </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                  <button
-                    onClick={(e) => handleRenameChat(e, chat.id, chat.title)}
-                    className="text-gray-400 hover:text-[#A259FF]"
-                    title="Rename Chat"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={(e) => deleteThread(e, chat.id)}
-                    className="text-gray-400 hover:text-red-500"
-                    title="Delete Chat"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                    </svg>
-                  </button>
-                </div>
+            {isFetchingThreads ? (
+              <div className="flex flex-col items-center justify-center py-10 space-y-3 opacity-70">
+                <svg className="animate-spin h-5 w-5 text-[#A259FF]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span className="text-xs font-medium text-gray-500 animate-pulse">Loading chats...</span>
               </div>
-            ))}
+            ) : (
+              conversations.map((chat) => (
+                <div
+                  key={chat.id}
+                  onClick={() => handleThreadClick(chat.id)}
+                  className={`group flex items-center justify-between gap-2 px-3 py-1.5 rounded-md cursor-pointer text-sm ${chat.id === activeThreadId ? "text-[#A259FF] bg-[#F3E8FF] font-medium" : "text-gray-600 hover:bg-gray-50"}`}
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <div className={`w-2 h-2 rounded-full shrink-0 ${chat.id === activeThreadId ? "bg-[#A259FF]" : "bg-gray-300"}`} />
+                    <span className="truncate">{chat.title}</span>
+                  </div>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    <button
+                      onClick={(e) => handleRenameChat(e, chat.id, chat.title)}
+                      className="text-gray-400 hover:text-[#A259FF]"
+                      title="Rename Chat"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={(e) => deleteThread(e, chat.id)}
+                      className="text-gray-400 hover:text-red-500"
+                      title="Delete Chat"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </aside>
 
