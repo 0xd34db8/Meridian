@@ -476,7 +476,7 @@ export default function ChatInterface() {
           </div>
 
           <div className={`flex-1 min-h-0 overflow-y-auto ${messages.length === 0 ? "pt-4 md:pt-8" : "pt-6 md:pt-10"} px-4 md:px-6 flex justify-center`}>
-            <div className="w-full max-w-3xl space-y-6 pb-32">
+            <div className="w-full max-w-3xl space-y-6">
               {messages.length === 0 && !isLoading && (
                 <div className="flex flex-col items-center justify-center text-center space-y-5 select-none my-auto py-4">
 
@@ -657,16 +657,19 @@ export default function ChatInterface() {
                   </div>
                 </div>
               ))}
+              <div className="h-24 shrink-0" /> {/* Spacer to ensure last message clears the input bar */}
               <div ref={messagesEndRef} />
             </div>
           </div>
 
           {/* Sticky Input Bar */}
 
-          <div className="w-full bg-transparent px-4 py-6 md:py-4 flex flex-col items-center shrink-0 pt-9">
+          <div className="w-full bg-transparent px-4 pb-6 md:pb-8 pt-8 md:pt-10 flex flex-col items-center shrink-0 z-20 relative">
             <div className="w-full max-w-2xl relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#A259FF] to-[#cf280a] rounded-[24px] blur-md group-focus-within:opacity-40 transition duration-500" />
-
+              <div 
+                className="absolute -inset-1 rounded-[24px] blur-md group-focus-within:opacity-40 transition duration-500" 
+                style={{ backgroundImage: "linear-gradient(to right, #ef4444 0%, #f97316 20%, #eab308 40%, #22c55e 60%, #3b82f6 80%, #a855f7 100%)" }}
+              />
               <div className="relative bg-white border-2 border-gray-200 rounded-[20px] p-2 flex items-center shadow-2xl focus-within:border-black transition-all">
                 <input
                   type="text"
