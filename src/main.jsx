@@ -5,7 +5,7 @@ import App from './App.jsx'
 
 // Wake up the backend as soon as the app loads
 const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
-fetch(`${apiUrl}/health`).catch(err => console.error("Failed to wake up backend:", err));
+fetch(`${apiUrl}/wakeup`).catch(err => console.error("Failed to wake up backend:", err));
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
