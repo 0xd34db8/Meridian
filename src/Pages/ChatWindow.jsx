@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from 'react-markdown';
 import { useSearchParams } from "react-router-dom";
 import Logo from "../components/ui/Logo";
 import SendBtn from "../components/ui/SendBtn";
@@ -626,9 +627,9 @@ export default function ChatInterface() {
                           {message.content}
                         </div>
                       ) : (
-                        <p className="text-[15px] leading-relaxed font-medium break-words whitespace-pre-wrap">
-                          {message.content}
-                        </p>
+                        <div className="text-[15px] leading-relaxed font-medium break-words markdown-body">
+                          <ReactMarkdown>{message.content}</ReactMarkdown>
+                        </div>
                       )}
                     </div>
 
